@@ -583,7 +583,7 @@ public abstract class SurfaceHost {
 
     public static final int reservedArgs = 1;
     public final void run(String[] args) {
-        if (!(this instanceof IGLRenderCallback) || (this instanceof ICanvasRenderCallback) || (this instanceof IHardwareCanvasRenderCallback) || (this instanceof ISurfaceRenderCallback)) {
+        if (!((this instanceof IGLRenderCallback) || (this instanceof ICanvasRenderCallback) || (this instanceof IHardwareCanvasRenderCallback) || (this instanceof ISurfaceRenderCallback))) {
             throw new RuntimeException("CFSurface: no render callback implemented");
         }
 
