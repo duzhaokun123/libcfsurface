@@ -19,7 +19,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.PixelFormat;
-import android.graphics.Point;
 import android.hardware.display.DisplayManager;
 import android.opengl.EGL14;
 import android.opengl.EGLConfig;
@@ -75,6 +74,7 @@ public abstract class SurfaceHost {
     private Method mTransactionHide = null;
     private Method mTransactionSetLayer = null;
     private Method mTransactionSetBufferSize = null;
+    private boolean mInterrupted = false;
 
     private final boolean checkRotation() {
         // This is fairly weird construct only because we need to handle the case of (for example)
@@ -479,6 +479,8 @@ public abstract class SurfaceHost {
         if (diff < 17) {
             try {
                 Thread.sleep(17 - diff);
+            } catch (InterruptedException e) {
+                mInterrupted = true;
             } catch (Exception e) {
             }
         }
@@ -523,7 +525,7 @@ public abstract class SurfaceHost {
 
                 onSize(mWidth, mHeight);
                 onInitRender();
-                while (!isInterrupted()) {
+                while (!(isInterrupted() || mInterrupted)) {
                     ((IGLRenderCallback)SurfaceHost.this).onGLRenderFrame();
                     EGL14.eglSwapBuffers(display, surface);
                     updateSurfaceVisibility();
@@ -549,7 +551,7 @@ public abstract class SurfaceHost {
             public void run() {
                 onSize(mWidth, mHeight);
                 onInitRender();
-                while (!isInterrupted()) {
+                while (!(isInterrupted() || mInterrupted)) {
                     if (SurfaceHost.this instanceof ISurfaceRenderCallback) {
                         ((ISurfaceRenderCallback)SurfaceHost.this).onSurfaceRenderFrame(mSurface);
                     } else if (SurfaceHost.this instanceof ICanvasRenderCallback) {
